@@ -1,10 +1,28 @@
+import { createButton } from '../ui/UIHelper.js';
+
 export class TitleScene extends Phaser.Scene {
   constructor() {
     super({ key: 'TitleScene' });
   }
 
+  preload() {
+    if (!this.textures.exists('player')) {
+      this.load.image('player', 'assets/images/player.png');
+    }
+    if (!this.textures.exists('background')) {
+      this.load.image('background', 'assets/images/background.png');
+    }
+  }
+
   create() {
     const { width, height } = this.scale;
+
+    // 배경 이미지 (타이틀 텍스트 가독성을 위해 살짝 반투명하게 배치)
+    if (this.textures.exists('background') && this.textures.get('background').key !== '__MISSING') {
+      this.add.image(width / 2, height / 2, 'background')
+        .setDisplaySize(width, height)
+        .setAlpha(0.35);
+    }
 
     // 제목
     this.add.text(width / 2, height * 0.3, '탕탕 수호대', {
@@ -23,21 +41,9 @@ export class TitleScene extends Phaser.Scene {
       lineSpacing: 8
     }).setOrigin(0.5);
 
-    // 게임 시작 버튼 배경 및 텍스트
-    const startBtn = this.add.rectangle(width / 2, height * 0.6, 200, 50, 0x3b82f6)
-      .setInteractive({ useHandCursor: true });
-
-    const startText = this.add.text(width / 2, height * 0.6, '게임 시작', {
-      fontFamily: 'sans-serif',
-      fontSize: '20px',
-      color: '#ffffff',
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
-
-    startBtn.on('pointerover', () => startBtn.setFillStyle(0x2563eb));
-    startBtn.on('pointerout', () => startBtn.setFillStyle(0x3b82f6));
-    startBtn.on('pointerdown', () => {
+    // 게임 시작 버튼 (design.md 공용 주 버튼 함수)
+    createButton(this, width / 2, height * 0.6, '게임 시작', () => {
       this.scene.start('GameScene');
-    });
+    }, { width: 220, height: 50, type: 'primary' });
   }
 }

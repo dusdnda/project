@@ -16,10 +16,16 @@ export class Player {
     // 피격 무적 시간
     this.invulnerableTime = 0;
 
-    // 플레이어 캐릭터 본체 (하늘색 원형 도형)
-    this.sprite = scene.add.circle(x, y, this.radius, 0x38bdf8);
-    scene.physics.add.existing(this.sprite);
-    this.sprite.body.setCircle(this.radius);
+    // 플레이어 캐릭터 본체 (이미지 사용, 불러오지 못하면 기존 원형 도형 폴백)
+    if (scene.textures.exists('player') && scene.textures.get('player').key !== '__MISSING') {
+      this.sprite = scene.physics.add.sprite(x, y, 'player');
+      this.sprite.setDisplaySize(this.radius * 2, this.radius * 2);
+      this.sprite.body.setCircle(this.sprite.width / 2);
+    } else {
+      this.sprite = scene.add.circle(x, y, this.radius, 0x38bdf8);
+      scene.physics.add.existing(this.sprite);
+      this.sprite.body.setCircle(this.radius);
+    }
     this.sprite.body.setCollideWorldBounds(true);
     this.sprite.playerInstance = this;
 

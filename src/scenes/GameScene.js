@@ -10,6 +10,15 @@ export class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
+  preload() {
+    if (!this.textures.exists('player')) {
+      this.load.image('player', 'assets/images/player.png');
+    }
+    if (!this.textures.exists('background')) {
+      this.load.image('background', 'assets/images/background.png');
+    }
+  }
+
   create() {
     // 게임 진행 상태 변수 초기화
     this.isPaused = false;
@@ -18,11 +27,19 @@ export class GameScene extends Phaser.Scene {
     this.killCount = 0;
     this.pendingSkillPoints = 0;
 
+    const { width, height } = this.scale;
+
+    // 0. 전장 배경 이미지 (로드 실패 시 기본 캔버스 색상 유지)
+    if (this.textures.exists('background') && this.textures.get('background').key !== '__MISSING') {
+      this.add.image(width / 2, height / 2, 'background')
+        .setDisplaySize(width, height)
+        .setDepth(-10);
+    }
+
     // 1. HUD 생성
     this.hud = new HUD(this);
 
     // 2. 플레이어 생성 (사망 시 게임오버 처리)
-    const { width, height } = this.scale;
     this.player = new Player(this, width / 2, height / 2, () => this.handleGameOver());
 
     // 3. 궤도 공전 무기 생성

@@ -1,3 +1,5 @@
+import { createSkillCard } from './UIHelper.js';
+
 export class LevelUpPopup {
   constructor(scene, onSelectSkill) {
     this.scene = scene;
@@ -49,40 +51,13 @@ export class LevelUpPopup {
 
     shuffled.forEach((skill, index) => {
       const cardY = height * 0.38 + index * 95;
-
-      const card = this.scene.add.rectangle(width / 2, cardY, 360, 80, 0x1f2937)
-        .setStrokeStyle(2, 0x3b82f6)
-        .setInteractive({ useHandCursor: true });
-
-      const nameText = this.scene.add.text(width / 2, cardY - 14, skill.name, {
-        fontFamily: 'sans-serif',
-        fontSize: '18px',
-        color: '#60a5fa',
-        fontStyle: 'bold'
-      }).setOrigin(0.5);
-
-      const descText = this.scene.add.text(width / 2, cardY + 16, skill.desc, {
-        fontFamily: 'sans-serif',
-        fontSize: '13px',
-        color: '#d1d5db'
-      }).setOrigin(0.5);
-
-      card.on('pointerover', () => {
-        card.setFillStyle(0x374151);
-        card.setStrokeStyle(2, 0x60a5fa);
-      });
-      card.on('pointerout', () => {
-        card.setFillStyle(0x1f2937);
-        card.setStrokeStyle(2, 0x3b82f6);
-      });
-      card.on('pointerdown', () => {
+      const card = createSkillCard(this.scene, width / 2, cardY, 360, 80, skill.name, skill.desc, () => {
         this.close();
         if (this.onSelectSkill) {
           this.onSelectSkill(skill.id);
         }
       });
-
-      this.container.add([card, nameText, descText]);
+      this.container.add(card);
     });
   }
 

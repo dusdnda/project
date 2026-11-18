@@ -12,3 +12,13 @@
 2026-11-11 16:34:02 / 레벨업 시 정지 및 무적 보장, 플레이어/적 이동 속도 밸런스 조정 / src/entities/Player.js, src/entities/Enemy.js, src/entities/EnemyManager.js, src/scenes/GameScene.js / 레벨업 팝업 중 물리 정지 및 무적 처리, 플레이어 기본 속도 10% 상향(220->242) 및 적 기본 속도 10% 하향(85->76)
 2026-11-11 16:37:56 / 프로젝트 현황 점검 및 다음 개선 방향 안내 / work-log.md / 모든 MVP 항목 및 요청 수정사항이 반영된 상태에서 후속 작업 안내
 2026-11-11 16:40:26 / 1~3레벨 누적 후 3레벨 도달 시 3연속 스킬 선택 및 기본 무기 공속 20% 상향 / src/entities/OrbitWeapon.js, src/entities/Player.js, src/ui/LevelUpPopup.js, src/scenes/GameScene.js / 초반 빈번한 팝업으로 인한 흐름 끊김 방지를 위해 3레벨 달성 시 3회 일괄 선택 큐 시스템 구축, 무기 기본 회전속도 20% 상향(3.2->3.84)
+
+2026-11-18 15:58:45 / 탕탕특공대 스타일 10종 전장 및 초기화면을 포함한 design.md 작성 / design.md / 12주차 그래픽 개발 기준 마련을 위해 색상 5종, 타이포 5단계, 버튼/화면배치 및 스타일 규칙을 30줄 규격으로 정립함
+
+2026-11-18 16:04:55 / 게임 코드를 건드리지 않고 test.html에 플레이어 캐릭터 시안 3종 구현 / test.html / design.md의 2D 카툰 캐주얼 스타일과 지정 5색을 기준으로 이미지 없이 순수 코드로 비교 시안 3종을 시각화함
+
+2026-11-18 16:08:30 / AI 이미지 생성용 배경 및 캐릭터 프롬프트 작성 및 2번 시안 코드 적용 대기 / work-log.md / '아직 코드는 고치지 마' 요청에 따라 코드 수정을 보류하고 design.md 기반 이미지 생성 프롬프트와 2번 시안 적용 계획을 정리함
+
+2026-11-18 16:13:30 / 플레이어 캐릭터 투명 PNG 및 전장 배경 생성 후 게임 코드에 적용 / assets/images/player.png, assets/images/background.png, src/entities/Player.js, src/scenes/GameScene.js, src/scenes/TitleScene.js / AI 이미지 생성 API 일시 오류에 대응하여 design.md 2번 시안 기준 투명 캐릭터 PNG와 도심 전장 배경을 생성하고, 로드 실패 시 도형 폴백을 지원하도록 게임에 연결함
+
+2026-11-18 16:21:55 / 버튼 및 팝업 공용 UI 함수(UIHelper.js) 구현 및 전 씬 적용, 효과음 기획 및 10스테이지 설계안 정리 / src/ui/UIHelper.js, src/scenes/TitleScene.js, src/scenes/ResultScene.js, src/ui/LevelUpPopup.js / design.md의 버튼/팝업 규격을 통일하고 12주차 효과음 순간 분석 및 1~10스테이지 밸런스 설계안을 사전 공유하여 규칙을 준수함

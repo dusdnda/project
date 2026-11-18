@@ -2,12 +2,16 @@ export class Enemy {
   constructor(scene, x, y, options = {}) {
     this.scene = scene;
     this.isBoss = options.isBoss || false;
+    this.name = options.name || (this.isBoss ? '보스 몬스터' : '적');
     this.hp = options.hp || (this.isBoss ? 400 : 30);
     this.maxHp = this.hp;
-    this.speed = options.speed || (this.isBoss ? 50 : 76); // 적 기본 속도 10% 하향 (일반 85->76, 보스 55->50)
+    this.speed = options.speed || (this.isBoss ? 50 : 76); // 적 기본 속도
     this.radius = options.radius || (this.isBoss ? 26 : 13);
     this.color = options.color || (this.isBoss ? 0xd946ef : 0xef4444);
     this.damage = options.damage || (this.isBoss ? 20 : 10);
+    this.splitOnDeath = options.splitOnDeath || false;
+    this.isFinal = options.isFinal || false;
+    this.enraged = false;
 
     // 적 스프라이트(원형)
     this.sprite = scene.add.circle(x, y, this.radius, this.color);
@@ -36,18 +40,19 @@ export class Enemy {
     if (!this.hpBar || !this.sprite) return;
     this.hpBar.clear();
 
-    const barWidth = 60;
+    const barWidth = Math.max(50, this.radius * 2.2);
     const barHeight = 6;
     const bx = this.sprite.x - barWidth / 2;
     const by = this.sprite.y - this.radius - 12;
 
     // 배경
-    this.hpBar.fillStyle(0x333333, 0.8);
+    this.hpBar.fillStyle(0x15191f, 0.85);
     this.hpBar.fillRect(bx, by, barWidth, barHeight);
 
     // 게이지
     const ratio = Math.max(0, this.hp / this.maxHp);
-    this.hpBar.fillStyle(0xd946ef, 1);
+    const barColor = (this.isFinal && ratio < 0.5) ? 0xef4444 : this.color;
+    this.hpBar.fillStyle(barColor, 1);
     this.hpBar.fillRect(bx, by, barWidth * ratio, barHeight);
   }
 
@@ -66,6 +71,11 @@ export class Enemy {
     });
 
     if (this.isBoss) {
+      if (this.isFinal && !this.enraged && (this.hp / this.maxHp) < 0.5) {
+        this.enraged = true;
+        this.speed *= 1.25;
+        this.color = 0xef4444;
+      }
       this.updateBossHpBar();
     }
 
@@ -93,6 +103,11 @@ export class Enemy {
     }
 
     if (this.isBoss) {
+      if (this.isFinal && !this.enraged && (this.hp / this.maxHp) < 0.5) {
+        this.enraged = true;
+        this.speed *= 1.25;
+        this.color = 0xef4444;
+      }
       this.updateBossHpBar();
     }
   }

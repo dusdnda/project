@@ -1,3 +1,5 @@
+import { createButton } from '../ui/UIHelper.js';
+
 export class ResultScene extends Phaser.Scene {
   constructor() {
     super({ key: 'ResultScene' });
@@ -37,37 +39,14 @@ export class ResultScene extends Phaser.Scene {
       color: '#60a5fa'
     }).setOrigin(0.5);
 
-    // 3. '다시 하기' 버튼
-    const restartBtn = this.add.rectangle(width / 2, height * 0.58, 220, 50, 0x10b981)
-      .setInteractive({ useHandCursor: true });
-
-    this.add.text(width / 2, height * 0.58, '다시 하기', {
-      fontFamily: 'sans-serif',
-      fontSize: '20px',
-      color: '#ffffff',
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
-
-    restartBtn.on('pointerover', () => restartBtn.setFillStyle(0x059669));
-    restartBtn.on('pointerout', () => restartBtn.setFillStyle(0x10b981));
-    restartBtn.on('pointerdown', () => {
+    // 3. '다시 하기' 버튼 (공용 주 버튼)
+    createButton(this, width / 2, height * 0.58, '다시 하기', () => {
       this.scene.start('GameScene');
-    });
+    }, { width: 220, height: 50, type: 'primary' });
 
-    // 4. '시작 화면으로' 버튼
-    const titleBtn = this.add.rectangle(width / 2, height * 0.68, 220, 48, 0x4b5563)
-      .setInteractive({ useHandCursor: true });
-
-    this.add.text(width / 2, height * 0.68, '시작 화면으로', {
-      fontFamily: 'sans-serif',
-      fontSize: '17px',
-      color: '#ffffff'
-    }).setOrigin(0.5);
-
-    titleBtn.on('pointerover', () => titleBtn.setFillStyle(0x374151));
-    titleBtn.on('pointerout', () => titleBtn.setFillStyle(0x4b5563));
-    titleBtn.on('pointerdown', () => {
+    // 4. '시작 화면으로' 버튼 (공용 보조 버튼)
+    createButton(this, width / 2, height * 0.68, '시작 화면으로', () => {
       this.scene.start('TitleScene');
-    });
+    }, { width: 220, height: 48, type: 'secondary', fontSize: '17px' });
   }
 }
