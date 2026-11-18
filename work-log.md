@@ -22,3 +22,7 @@
 2026-11-18 16:13:30 / 플레이어 캐릭터 투명 PNG 및 전장 배경 생성 후 게임 코드에 적용 / assets/images/player.png, assets/images/background.png, src/entities/Player.js, src/scenes/GameScene.js, src/scenes/TitleScene.js / AI 이미지 생성 API 일시 오류에 대응하여 design.md 2번 시안 기준 투명 캐릭터 PNG와 도심 전장 배경을 생성하고, 로드 실패 시 도형 폴백을 지원하도록 게임에 연결함
 
 2026-11-18 16:21:55 / 버튼 및 팝업 공용 UI 함수(UIHelper.js) 구현 및 전 씬 적용, 효과음 기획 및 10스테이지 설계안 정리 / src/ui/UIHelper.js, src/scenes/TitleScene.js, src/scenes/ResultScene.js, src/ui/LevelUpPopup.js / design.md의 버튼/팝업 규격을 통일하고 12주차 효과음 순간 분석 및 1~10스테이지 밸런스 설계안을 사전 공유하여 규칙을 준수함
+
+2026-11-18 16:37:45 / 10스테이지 진행 시스템, 오디오 생성 및 사운드 매니저 구현, tasks.md 업데이트 및 크로스체크 / assets/audio/*, src/audio/SoundManager.js, src/config/StageConfig.js, src/entities/Enemy.js, src/entities/EnemyManager.js, src/entities/GemManager.js, src/entities/Player.js, src/scenes/GameScene.js, src/scenes/ResultScene.js, src/scenes/TitleScene.js, src/ui/HUD.js, src/ui/UIHelper.js, tasks.md / 요청된 10스테이지 보스 기믹 및 진행 루프, BGM(0.3)/효과음(0.5) 피치 제어 사운드 시스템 및 음소거 토글을 완성하고 검증 완료함
+
+2026-11-18 16:51:00 / CREDITS.md 작성, 다중 무기 시스템(총/석궁/레이저 중복 장착) 구현 및 적 스펙 리밸런싱, 보석 중복 습득 버그 수정 / CREDITS.md, src/entities/WeaponManager.js, src/entities/GemManager.js, src/config/StageConfig.js, src/ui/LevelUpPopup.js, src/scenes/GameScene.js, src/scenes/ResultScene.js, tasks.md / 요청된 무기 해금 루프(3의 배수 레벨)와 중복 장착 체계를 모듈화하여 구축하고, 화력 증가에 맞춘 적 체력/공격력 상향 및 보석 중복 획득 버그를 완벽하게 점검함

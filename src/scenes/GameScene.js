@@ -1,13 +1,21 @@
 import { Player } from '../entities/Player.js';
-import { OrbitWeapon } from '../entities/OrbitWeapon.js';
+import { WeaponManager } from '../entities/WeaponManager.js';
 import { EnemyManager } from '../entities/EnemyManager.js';
 import { GemManager } from '../entities/GemManager.js';
 import { HUD } from '../ui/HUD.js';
 import { LevelUpPopup } from '../ui/LevelUpPopup.js';
+import { getStageConfig } from '../config/StageConfig.js';
+import { SoundManager } from '../audio/SoundManager.js';
 
 export class GameScene extends Phaser.Scene {
   constructor() {
     super({ key: 'GameScene' });
+  }
+
+  init(data) {
+    this.stageNumber = data.stage || 1;
+    this.savedPlayerState = data.playerState || null;
+    this.totalKills = data.totalKills || 0;
   }
 
   preload() {
@@ -17,65 +25,75 @@ export class GameScene extends Phaser.Scene {
     if (!this.textures.exists('background')) {
       this.load.image('background', 'assets/images/background.png');
     }
+    SoundManager.preload(this);
   }
 
   create() {
-    // 게임 진행 상태 변수 초기화
     this.isPaused = false;
     this.isGameOver = false;
-    this.elapsedTime = 0; // 초 단위 누적 시간
-    this.killCount = 0;
+    this.elapsedTime = 0;
+    this.killCount = this.totalKills;
     this.pendingSkillPoints = 0;
 
     const { width, height } = this.scale;
+    this.stageConfig = getStageConfig(this.stageNumber);
 
-    // 0. 전장 배경 이미지 (로드 실패 시 기본 캔버스 색상 유지)
+    // 0. 사운드 시스템 및 BGM 초기화, 소리 토글 버튼
+    SoundManager.initUserInteraction(this);
+    SoundManager.playBGM(this);
+    SoundManager.createSoundToggle(this, width - 25, 34);
+
+    // 1. 전장 배경 이미지
     if (this.textures.exists('background') && this.textures.get('background').key !== '__MISSING') {
       this.add.image(width / 2, height / 2, 'background')
         .setDisplaySize(width, height)
         .setDepth(-10);
     }
 
-    // 1. HUD 생성
-    this.hud = new HUD(this);
+    // 2. HUD 생성 (현재 스테이지 정보 전달)
+    this.hud = new HUD(this, this.stageNumber, this.stageConfig.name);
 
-    // 2. 플레이어 생성 (사망 시 게임오버 처리)
+    // 3. 플레이어 생성
     this.player = new Player(this, width / 2, height / 2, () => this.handleGameOver());
 
-    // 3. 궤도 공전 무기 생성
-    this.orbitWeapon = new OrbitWeapon(this, this.player);
-
-    // 4. 경험치 보석 관리자 생성
+    // 4. 경험치 보석 관리자
     this.gemManager = new GemManager(this, this.player, (exp) => {
       this.player.addExp(exp, (newLevel) => this.onPlayerLevelUp(newLevel));
     });
 
-    // 5. 적 관리자 생성 (적 처치 / 보스 처치 콜백 연결)
+    // 5. 적 관리자 (스테이지별 보스 및 웨이브 제어)
     this.enemyManager = new EnemyManager(
       this,
       this.player,
+      this.stageConfig,
       (x, y, isBoss) => {
         this.killCount += 1;
         this.gemManager.spawnGem(x, y, isBoss ? 50 : 10);
       },
-      () => this.handleGameClear()
+      () => this.handleStageClear()
     );
 
-    // 6. 레벨업 팝업 생성
+    // 6. 다중 무기 관리자 (위성 무기, 권총, 석궁, 레이저)
+    this.weaponManager = new WeaponManager(this, this.player, this.enemyManager);
+
+    // 스테이지 간 상태 복원 (무기들, 레벨, 속도 등 유지)
+    if (this.savedPlayerState) {
+      this.player.level = this.savedPlayerState.level;
+      this.player.exp = this.savedPlayerState.exp;
+      this.player.nextLevelExp = this.savedPlayerState.nextLevelExp;
+      this.player.maxHp = this.savedPlayerState.maxHp;
+      this.player.hp = this.savedPlayerState.hp;
+      this.player.speed = this.savedPlayerState.speed;
+
+      if (this.savedPlayerState.weapons) {
+        this.weaponManager.loadState(this.savedPlayerState.weapons);
+      }
+    }
+
+    // 7. 레벨업 팝업 생성
     this.levelUpPopup = new LevelUpPopup(this, (skillId) => this.applySkill(skillId));
 
-    // 7. 물리 충돌 (무기 <-> 적)
-    this.physics.add.overlap(
-      this.orbitWeapon.group,
-      this.enemyManager.group,
-      (orb, enemySprite) => {
-        if (!this.isPaused && !this.isGameOver) {
-          this.enemyManager.damageEnemy(enemySprite, this.orbitWeapon.damage);
-        }
-      }
-    );
-
-    // 8. 물리 충돌 (플레이어 <-> 적 : 접촉 피해)
+    // 8. 충돌 (플레이어 <-> 적 : 접촉 피해)
     this.physics.add.overlap(
       this.player.sprite,
       this.enemyManager.group,
@@ -89,7 +107,7 @@ export class GameScene extends Phaser.Scene {
       }
     );
 
-    // 9. 물리 충돌 (플레이어 <-> 경험치 젬 : 습득)
+    // 9. 충돌 (플레이어 <-> 경험치 젬)
     this.physics.add.overlap(
       this.player.sprite,
       this.gemManager.group,
@@ -101,12 +119,27 @@ export class GameScene extends Phaser.Scene {
     );
   }
 
+  getPlayerState(healBonus = false) {
+    const hp = healBonus
+      ? Math.min(this.player.maxHp, this.player.hp + Math.floor(this.player.maxHp * 0.5))
+      : this.player.hp;
+
+    return {
+      level: this.player.level,
+      exp: this.player.exp,
+      nextLevelExp: this.player.nextLevelExp,
+      hp: hp,
+      maxHp: this.player.maxHp,
+      speed: this.player.speed,
+      weapons: this.weaponManager.getState(),
+      weaponsSummary: this.weaponManager.getActiveWeaponsSummary()
+    };
+  }
+
   onPlayerLevelUp(newLevel) {
     if (newLevel === 2) {
-      // 1~3레벨 구간: 2레벨 달성 시 선택을 대기하고 포인트만 누적
       this.pendingSkillPoints = 1;
     } else if (newLevel === 3) {
-      // 3레벨 달성 시 1~3레벨 총 3개의 능력치를 한 번에 선택할 수 있도록 3회 부여
       this.pendingSkillPoints = 3;
       this.startLevelUpSelection();
     } else if (newLevel > 3) {
@@ -118,45 +151,33 @@ export class GameScene extends Phaser.Scene {
   startLevelUpSelection() {
     if (this.isGameOver) return;
     this.isPaused = true;
-    this.physics.pause(); // 물리 엔진 일시정지
-    if (this.player) {
-      this.player.stop(); // 플레이어 정지
-    }
-    if (this.enemyManager) {
-      this.enemyManager.stopAll(); // 모든 적 개체 정지
-    }
-    this.levelUpPopup.show(this.player.level, this.pendingSkillPoints);
+    this.physics.pause();
+    if (this.player) this.player.stop();
+    if (this.enemyManager) this.enemyManager.stopAll();
+    this.levelUpPopup.show(this.player.level, this.pendingSkillPoints, this.weaponManager.getState());
   }
 
   applySkill(skillId) {
-    switch (skillId) {
-      case 'add_orb':
-        this.orbitWeapon.addOrb();
-        break;
-      case 'speed_up':
-        this.orbitWeapon.increaseSpeed(0.25);
-        break;
-      case 'player_speed':
-        this.player.upgradeSpeed(0.2);
-        break;
-      case 'heal':
-        this.player.heal(40);
-        break;
+    if (skillId === 'player_speed') {
+      this.player.upgradeSpeed(0.2);
+    } else if (skillId === 'heal') {
+      this.player.heal(40);
+    } else {
+      this.weaponManager.upgrade(skillId);
     }
 
     this.pendingSkillPoints -= 1;
 
-    // 남은 선택 횟수가 있으면 다음 선택지 제시, 모두 소진 시 게임 재개
     if (this.pendingSkillPoints > 0) {
       this.time.delayedCall(100, () => {
         if (!this.isGameOver) {
-          this.levelUpPopup.show(this.player.level, this.pendingSkillPoints);
+          this.levelUpPopup.show(this.player.level, this.pendingSkillPoints, this.weaponManager.getState());
         }
       });
     } else {
-      this.physics.resume(); // 물리 엔진 재개
+      this.physics.resume();
       if (this.player) {
-        this.player.invulnerableTime = 600; // 선택 완료 후 0.6초 안전 무적 부여
+        this.player.invulnerableTime = 600;
       }
       this.isPaused = false;
     }
@@ -172,30 +193,44 @@ export class GameScene extends Phaser.Scene {
     if (this.isGameOver) return;
     this.isGameOver = true;
 
+    SoundManager.playGameOver(this);
+
     const finalTime = this.getFormattedTime();
     const finalKills = this.killCount;
 
-    this.time.delayedCall(700, () => {
+    this.time.delayedCall(800, () => {
       this.scene.start('ResultScene', {
         result: 'lose',
+        stage: this.stageNumber,
+        stageName: this.stageConfig.name,
         survivalTime: finalTime,
-        kills: finalKills
+        kills: finalKills,
+        totalKills: this.killCount,
+        playerState: this.getPlayerState(false)
       });
     });
   }
 
-  handleGameClear() {
+  handleStageClear() {
     if (this.isGameOver) return;
     this.isGameOver = true;
 
+    SoundManager.playClear(this);
+
     const finalTime = this.getFormattedTime();
     const finalKills = this.killCount;
+    const isFinal = this.stageNumber >= 10;
 
-    this.time.delayedCall(1000, () => {
+    this.time.delayedCall(1200, () => {
       this.scene.start('ResultScene', {
         result: 'win',
+        stage: this.stageNumber,
+        stageName: this.stageConfig.name,
+        isFinalStage: isFinal,
         survivalTime: finalTime,
-        kills: finalKills
+        kills: finalKills,
+        totalKills: this.killCount,
+        playerState: this.getPlayerState(true)
       });
     });
   }
@@ -208,8 +243,8 @@ export class GameScene extends Phaser.Scene {
     if (this.player) {
       this.player.update(delta);
     }
-    if (this.orbitWeapon) {
-      this.orbitWeapon.update(delta);
+    if (this.weaponManager) {
+      this.weaponManager.update(delta);
     }
     if (this.enemyManager) {
       this.enemyManager.update(delta, this.elapsedTime);

@@ -1,3 +1,5 @@
+import { SoundManager } from '../audio/SoundManager.js';
+
 export class Player {
   constructor(scene, x, y, onDie) {
     this.scene = scene;
@@ -68,6 +70,7 @@ export class Player {
 
     this.hp = Math.max(0, this.hp - amount);
     this.invulnerableTime = 600; // 0.6초 무적
+    SoundManager.playHit(this.scene);
 
     // 피격 시 카메라 흔들림 및 깜빡임 연출
     this.scene.cameras.main.shake(150, 0.008);
@@ -93,6 +96,7 @@ export class Player {
       this.exp -= this.nextLevelExp;
       this.level += 1;
       this.nextLevelExp = Math.floor(this.nextLevelExp * 1.5);
+      SoundManager.playLevelUp(this.scene);
 
       // 레벨업 시 체력 25% 회복
       this.hp = Math.min(this.maxHp, this.hp + 25);

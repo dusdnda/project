@@ -4,6 +4,8 @@
  * - 팝업: 반투명 오버레이 및 둥근 카드 패널
  */
 
+import { SoundManager } from '../audio/SoundManager.js';
+
 export function createButton(scene, x, y, text, onClick, options = {}) {
   const width = options.width || 220;
   const height = options.height || 50;
@@ -54,6 +56,7 @@ export function createButton(scene, x, y, text, onClick, options = {}) {
 
   container.on('pointerup', () => {
     container.y = y;
+    SoundManager.playClick(scene);
     if (onClick) {
       onClick();
     }
@@ -109,6 +112,7 @@ export function createSkillCard(scene, x, y, width, height, title, desc, onClick
 
   container.on('pointerup', () => {
     container.y = y;
+    SoundManager.playSkill(scene);
     if (onClick) {
       onClick();
     }

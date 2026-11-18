@@ -1,5 +1,5 @@
 export class HUD {
-  constructor(scene) {
+  constructor(scene, stageNumber = 1, stageName = '도심 대로') {
     this.scene = scene;
     const { width } = scene.scale;
 
@@ -13,15 +13,30 @@ export class HUD {
       fontStyle: 'bold'
     }).setOrigin(0.5).setDepth(11);
 
-    // 2. 타이머 텍스트 (화면 상단 중앙)
+    // 2. 스테이지 정보 (좌측 상단)
+    this.stageText = scene.add.text(14, 34, `STAGE ${stageNumber} - ${stageName}`, {
+      fontFamily: 'sans-serif',
+      fontSize: '12px',
+      color: '#38bdf8',
+      fontStyle: 'bold'
+    }).setOrigin(0, 0.5).setDepth(10);
+
+    // 3. 타이머 텍스트 (화면 상단 중앙)
     this.timerText = scene.add.text(width / 2, 34, '00:00', {
       fontFamily: 'sans-serif',
-      fontSize: '22px',
+      fontSize: '20px',
       color: '#ffffff',
       fontStyle: 'bold'
     }).setOrigin(0.5).setDepth(10);
 
-    // 3. 체력 게이지 바 (타이머 아래)
+    // 4. 처치 수 표시 (우측 상단, 사운드 버튼 옆)
+    this.killText = scene.add.text(width - 50, 34, '처치: 0', {
+      fontFamily: 'sans-serif',
+      fontSize: '13px',
+      color: '#9ca3af'
+    }).setOrigin(1, 0.5).setDepth(10);
+
+    // 5. 체력 게이지 바 (타이머 아래)
     const hpBarWidth = 140;
     const hpBarHeight = 12;
     this.hpBg = scene.add.rectangle(width / 2, 54, hpBarWidth, hpBarHeight, 0x374151).setDepth(10);
@@ -32,13 +47,6 @@ export class HUD {
       color: '#ffffff',
       fontStyle: 'bold'
     }).setOrigin(0.5).setDepth(11);
-
-    // 4. 처치 수 표시 (우측 상단)
-    this.killText = scene.add.text(width - 16, 34, '처치: 0', {
-      fontFamily: 'sans-serif',
-      fontSize: '14px',
-      color: '#9ca3af'
-    }).setOrigin(1, 0.5).setDepth(10);
   }
 
   update(player, elapsedTimeSeconds, killCount) {

@@ -1,21 +1,24 @@
 import { Enemy } from './Enemy.js';
+import { SoundManager } from '../audio/SoundManager.js';
 
 export class EnemyManager {
-  constructor(scene, player, onEnemyKilled, onBossKilled) {
+  constructor(scene, player, stageConfig, onEnemyKilled, onStageClear) {
     this.scene = scene;
     this.player = player;
+    this.stageConfig = stageConfig;
     this.onEnemyKilled = onEnemyKilled;
-    this.onBossKilled = onBossKilled;
+    this.onStageClear = onStageClear;
 
     this.enemies = [];
     this.group = scene.physics.add.group();
 
     this.spawnTimer = 0;
-    this.spawnInterval = 1200; // 초기 스폰 간격 (1.2초)
-    this.elapsedGameTime = 0; // 초 단위
+    this.spawnInterval = stageConfig.spawnInterval || 1200;
+    this.elapsedGameTime = 0;
 
     this.bossSpawned = false;
-    this.bossDefeated = false;
+    this.bossesAlive = 0;
+    this.isStageCleared = false;
   }
 
   getRandomSpawnPos() {
@@ -48,44 +51,88 @@ export class EnemyManager {
   spawnEnemy() {
     const { x, y } = this.getRandomSpawnPos();
 
-    // 시간에 따른 적 스펙 점진 증가 (기본 속도 10% 하향 적용)
-    let hp = 30;
-    let speed = 76;
-    if (this.elapsedGameTime >= 30) {
-      hp = 45;
-      speed = 85;
+    let hp = this.stageConfig.enemyHp || 35;
+    let speed = this.stageConfig.enemySpeed || 76;
+    let damage = this.stageConfig.enemyDamage || 10;
+
+    // 스테이지 중반(20초 후) 약간의 웨이브 강화
+    if (this.elapsedGameTime >= 20) {
+      hp = Math.floor(hp * 1.25);
+      speed = Math.floor(speed * 1.1);
+      damage = Math.floor(damage * 1.2);
     }
 
-    const enemy = new Enemy(this.scene, x, y, { hp, speed });
+    const enemy = new Enemy(this.scene, x, y, { hp, speed, damage });
     this.enemies.push(enemy);
     this.group.add(enemy.sprite);
   }
 
-  spawnBoss() {
+  spawnBosses() {
     this.bossSpawned = true;
-    const { width } = this.scene.scale;
+    const { width, height } = this.scene.scale;
+
+    // 사운드: 보스 출현 경보
+    SoundManager.playBossAlert(this.scene);
 
     // 경고 텍스트 연출
-    const warning = this.scene.add.text(width / 2, 200, '⚠️ 보스 몬스터 등장! ⚠️', {
+    const bossList = this.stageConfig.bosses || [];
+    const warningText = bossList.length > 1
+      ? `⚠️ ${this.stageConfig.name} 보스 ${bossList.length}체 습격! ⚠️`
+      : `⚠️ ${bossList[0]?.name || '보스 몬스터'} 등장! ⚠️`;
+
+    const warning = this.scene.add.text(width / 2, 210, warningText, {
       fontFamily: 'sans-serif',
-      fontSize: '24px',
+      fontSize: '22px',
       color: '#ef4444',
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
+      fontStyle: 'bold',
+      align: 'center'
+    }).setOrigin(0.5).setDepth(90);
 
     this.scene.tweens.add({
       targets: warning,
       alpha: 0,
       yoyo: true,
       repeat: 3,
-      duration: 300,
+      duration: 250,
       onComplete: () => warning.destroy()
     });
 
-    // 화면 상단 밖에서 보스 스폰
-    const boss = new Enemy(this.scene, width / 2, -60, { isBoss: true });
-    this.enemies.push(boss);
-    this.group.add(boss.sprite);
+    this.bossesAlive = bossList.length;
+
+    // 보스 개체들 스폰
+    bossList.forEach((bossData) => {
+      let bx = width / 2;
+      let by = -50;
+
+      if (bossData.spawnPos === 'bottom') {
+        bx = width / 2;
+        by = height + 50;
+      } else if (bossData.spawnPos === 'left') {
+        bx = -50;
+        by = height / 2;
+      } else if (bossData.spawnPos === 'right') {
+        bx = width + 50;
+        by = height / 2;
+      } else {
+        bx = width / 2 + (bossData.offsetX || 0);
+        by = -50;
+      }
+
+      const boss = new Enemy(this.scene, bx, by, {
+        isBoss: true,
+        name: bossData.name,
+        hp: bossData.hp,
+        speed: bossData.speed,
+        radius: bossData.radius,
+        color: bossData.color,
+        damage: bossData.damage,
+        splitOnDeath: bossData.splitOnDeath || false,
+        isFinal: bossData.isFinal || false
+      });
+
+      this.enemies.push(boss);
+      this.group.add(boss.sprite);
+    });
   }
 
   damageEnemy(enemySprite, amount) {
@@ -95,6 +142,7 @@ export class EnemyManager {
     const deathX = enemy.x;
     const deathY = enemy.y;
     const isBoss = enemy.isBoss;
+    const splitOnDeath = enemy.splitOnDeath;
 
     const isKilled = enemy.takeDamage(amount);
     if (isKilled) {
@@ -105,13 +153,46 @@ export class EnemyManager {
         this.onEnemyKilled(deathX, deathY, isBoss);
       }
 
-      if (isBoss && !this.bossDefeated) {
-        this.bossDefeated = true;
-        if (this.onBossKilled) {
-          this.onBossKilled();
+      if (isBoss) {
+        SoundManager.playBossKill(this.scene);
+
+        // 5스테이지 보스 분열 기믹
+        if (splitOnDeath) {
+          this.spawnMiniBosses(deathX, deathY);
+        } else {
+          this.bossesAlive -= 1;
+        }
+
+        // 모든 보스 격파 시 스테이지 클리어
+        if (this.bossesAlive <= 0 && !this.isStageCleared) {
+          this.isStageCleared = true;
+          if (this.onStageClear) {
+            this.onStageClear();
+          }
         }
       }
     }
+  }
+
+  spawnMiniBosses(x, y) {
+    // 2마리로 분열
+    const offsets = [-35, 35];
+    offsets.forEach(offset => {
+      const mini = new Enemy(this.scene, x + offset, y, {
+        isBoss: true,
+        name: '분열 바이러스체',
+        hp: 150,
+        speed: 70,
+        radius: 19,
+        color: 0xc084fc,
+        damage: 16,
+        splitOnDeath: false
+      });
+      this.enemies.push(mini);
+      this.group.add(mini.sprite);
+    });
+    // 원래 1마리 소멸 후 2마리 추가이므로 결과적으로 +1
+    this.bossesAlive += 1;
   }
 
   stopAll() {
@@ -123,16 +204,14 @@ export class EnemyManager {
   update(delta, totalElapsedTime) {
     this.elapsedGameTime = totalElapsedTime || 0;
 
-    // 60초 도달 시 보스 출현
-    if (this.elapsedGameTime >= 60 && !this.bossSpawned) {
-      this.spawnBoss();
+    // 보스 출현 시점 체크
+    if (this.elapsedGameTime >= this.stageConfig.bossTime && !this.bossSpawned) {
+      this.spawnBosses();
     }
 
-    // 시간에 따라 스폰 간격 단축
-    if (this.elapsedGameTime >= 30) {
-      this.spawnInterval = 750;
-    } else {
-      this.spawnInterval = 1200;
+    // 시간에 따른 스폰 간격 조정
+    if (this.elapsedGameTime >= 20) {
+      this.spawnInterval = Math.max(500, (this.stageConfig.spawnInterval || 1200) * 0.7);
     }
 
     this.spawnTimer += (delta || 16);

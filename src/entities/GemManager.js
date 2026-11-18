@@ -1,3 +1,5 @@
+import { SoundManager } from '../audio/SoundManager.js';
+
 export class GemManager {
   constructor(scene, player, onGemCollected) {
     this.scene = scene;
@@ -18,9 +20,14 @@ export class GemManager {
   }
 
   collectGem(gemSprite) {
-    if (!gemSprite || !gemSprite.active) return;
+    if (!gemSprite || !gemSprite.active || gemSprite.isCollected) return;
+    gemSprite.isCollected = true;
+    if (gemSprite.body) {
+      gemSprite.body.enable = false;
+    }
 
     const expValue = gemSprite.expValue || 10;
+    SoundManager.playGem(this.scene);
     
     // 젬 습득 시 살짝 커졌다가 사라지는 트윈 연출
     this.scene.tweens.add({
