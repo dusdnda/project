@@ -39,3 +39,5 @@
 2026-11-25 16:28:00 / 원스토어 ONEplay SDK 연동 및 GitHub Pages 배포본 진단(코드 미수정) / prompt.txt, work-log.md / SDK 부팅 순서와 iframe·응답 헤더를 읽기 전용으로 점검해 검증 실패 원인을 특정함
 
 2026-11-25 16:30:20 / 원스토어 SDK 부팅 순서 수정 / index.html, src/main.js, prompt.txt, work-log.md / 시간 기반 자동 시작과 SDK 실패 시 시작을 제거하고 일반 브라우저 분기와 SDK 시작 성공 분기를 검증함
+
+2026-11-25 16:33:41 / 원스토어 SDK 초기화 미호출 오류 수정 / index.html, prompt.txt, work-log.md / SDK가 생성한 읽기 전용 전역 객체에 재대입해 초기화 전에 예외가 발생하므로 대입을 제거하고 실제 SDK의 getConfig 전송을 검증함
