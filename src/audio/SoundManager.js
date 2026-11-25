@@ -67,6 +67,18 @@ class SoundManagerClass {
     }
   }
 
+  pauseAll() {
+    if (this.bgm && this.bgm.isPlaying) {
+      this.bgm.pause();
+    }
+  }
+
+  resumeAll() {
+    if (this.bgm && this.bgm.isPaused && !this.isMuted) {
+      this.bgm.resume();
+    }
+  }
+
   toggleMute(scene) {
     this.isMuted = !this.isMuted;
     if (this.bgm) {

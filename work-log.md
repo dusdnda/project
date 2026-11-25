@@ -28,3 +28,7 @@
 2026-11-18 16:51:00 / CREDITS.md 작성, 다중 무기 시스템(총/석궁/레이저 중복 장착) 구현 및 적 스펙 리밸런싱, 보석 중복 습득 버그 수정 / CREDITS.md, src/entities/WeaponManager.js, src/entities/GemManager.js, src/config/StageConfig.js, src/ui/LevelUpPopup.js, src/scenes/GameScene.js, src/scenes/ResultScene.js, tasks.md / 요청된 무기 해금 루프(3의 배수 레벨)와 중복 장착 체계를 모듈화하여 구축하고, 화력 증가에 맞춘 적 체력/공격력 상향 및 보석 중복 획득 버그를 완벽하게 점검함
 
 2026-11-25 16:06:20 / spec.md 맨 아래에 출시 명세 항목 추가 / spec.md / GitHub Pages 배포, 원스토어 웹게임 SDK 기본 연동, 일반 브라우저 호환 및 인앱결제/광고 미포함 출시 요구사항을 명세에 반영함
+
+2026-11-25 16:08:45 / 원스토어 웹게임 SDK 기본 연동 계획 수립 및 변경 내용 사전 안내 / work-log.md / '고치기 전에 무엇을 바꿀지 먼저 보여 줘' 요청 및 대규모 수정 전 사전 승인 규칙에 따라 파일별 변경 계획과 부팅 흐름을 제시함
+
+2026-11-25 16:10:30 / 원스토어 웹게임 SDK 기본 연동 구현 (부팅 흐름 및 라이프사이클) / index.html, src/main.js, src/audio/SoundManager.js, tasks.md / 최상위 SDK 로드, 일반 브라우저 err 폴백, setLoadingProgress/startGameAsync 및 pause/resume 사운드 연동 완료

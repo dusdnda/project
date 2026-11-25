@@ -78,3 +78,7 @@
 - [x] 19. 다중 무기 시스템 (총, 석궁, 레이저 중복 장착) 및 적 밸런스 조정 (`src/entities/WeaponManager.js`)
   - **작업 내용**: 기본 궤도 무기 외에 3의 배수 레벨(Lv.3, Lv.6, Lv.9...)마다 총, 석궁, 레이저 신규 무기 해금 및 강화 선택지 제공, 교체가 아닌 동시 중복 장착 지원, 적 체력/공격력 상향 리밸런싱, 보석 중복 습득 방지 버그 수정
   - **Live Server 확인 내용**: 3레벨 도달 시 신규 무기 선택 팝업이 뜨고, 무기 선택 시 기존 궤도 무기와 함께 권총/석궁/레이저가 동시에 적을 자동 공격하며, 스테이지 전환 시에도 장착된 모든 무기가 유지되는지 확인.
+
+- [x] 20. 원스토어 H5 웹게임 SDK 기본 연동 (`index.html`, `src/main.js`, `src/audio/SoundManager.js`)
+  - **작업 내용**: `index.html` 최상단에서 원스토어 Web SDK(v1.2.0)를 Phaser보다 먼저 로드, `initializeAsync` 및 일반 브라우저(`info.err`) 폴백 분기, `setLoadingProgress` 및 `startGameAsync` 부팅 루프 구현, `pause` 시 게임/사운드 정지 및 `resume` 시 재개, 광고 및 결제 미포함 규격 준수
+  - **Live Server 확인 내용**: Live Server 및 일반 브라우저에서 콘솔 에러 없이 정상 실행되며, `window.TangTangGuard` 및 `window.oneStoreSDK` 인스턴스가 생성되는지 확인.
