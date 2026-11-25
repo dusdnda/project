@@ -32,3 +32,6 @@
 2026-11-25 16:08:45 / 원스토어 웹게임 SDK 기본 연동 계획 수립 및 변경 내용 사전 안내 / work-log.md / '고치기 전에 무엇을 바꿀지 먼저 보여 줘' 요청 및 대규모 수정 전 사전 승인 규칙에 따라 파일별 변경 계획과 부팅 흐름을 제시함
 
 2026-11-25 16:10:30 / 원스토어 웹게임 SDK 기본 연동 구현 (부팅 흐름 및 라이프사이클) / index.html, src/main.js, src/audio/SoundManager.js, tasks.md / 최상위 SDK 로드, 일반 브라우저 err 폴백, setLoadingProgress/startGameAsync 및 pause/resume 사운드 연동 완료
+
+
+2026-11-25 16:23:10 / 원스토어 SDK 미탑재 오류 원인 분석 및 전역 객체(ONEstoreH5) 노출 보강 / index.html, work-log.md / 원콘솔 검증기가 배포 URL(GitHub Pages)을 기준으로 검사함에 따른 깃 푸시 필요성을 안내하고 전역 객체(window.ONEstoreH5, window.createSDK) 노출을 보강함
