@@ -91,15 +91,12 @@
               })
               .catch((e) => {
                 console.warn("startGameAsync failed:", e);
-                whenGameReady((game) => game.start());
               });
           }
         }, 50);
       })
       .catch((e) => {
-        // SDK 초기화 실패 시에도 일반 플레이가 가능하도록 즉시 시작
-        console.warn("ONE store SDK initialization skipped:", e);
-        whenGameReady((game) => game.start());
+        console.warn("ONE store SDK initialization failed:", e);
       });
   </script>
 

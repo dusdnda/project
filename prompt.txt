@@ -95,3 +95,29 @@ pause 때는 게임과 소리를 멈추고 resume 때 다시 시작해 줘.
 [2026-11-25 16:10:04] 네, 이 변경안대로 진행해주세요
 
 [2026-11-25 16:19:22] sdk미탑재라고 뜹니다
+
+[2026-11-25 16:28:00] 현재 원스토어 ONEplay 검증에서 '실패 — 등록 불가 · SDK 미탑재' 판정을 받고 있습니다.
+
+
+
+게임 URL: [https://dusdnda.github.io/project/](https://dusdnda.github.io/project/)
+
+
+
+원스토어 H5 Game SDK v1.2.0을 연동했으며, index.html에 createSDK(), initializeAsync(), startGameAsync() 코드가 있습니다.
+
+
+
+다음 작업을 진행해 주세요.
+
+1. `/onestore-web-sdk doctor`를 실행하여 현재 SDK 연동 상태를 진단해 주세요.
+2. SDK CDN 로드 및 초기화 과정에 문제가 있는지 확인해 주세요.
+3. SDK가 실행되기 전에 게임이 먼저 시작되는 문제가 있는지 확인해 주세요.
+4. index.html과 src/main.js의 게임 시작 순서를 점검해 주세요.
+5. 원스토어 검증 환경에서 SDK가 정상적으로 인식될 수 있는지 확인해 주세요.
+6. iframe 임베드 및 배포된 GitHub Pages 코드도 점검해 주세요.
+
+현재 코드를 먼저 수정하지 말고, 문제점과 수정이 필요한 파일 및 위치를 구체적으로 보고해 주세요.
+
+[2026-11-25 16:30:20] 원스토어 SDK 부팅 순서 문제를 수정해 줘.\
+일반 브라우저 폴백은 유지하고, 원스토어에서는 startGameAsync 성공 뒤에만 게임이 시작되게 해 줘.

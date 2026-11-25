@@ -60,9 +60,3 @@ window.TangTangGuard = {
 // 게임 준비 완료 이벤트 전파
 document.dispatchEvent(new CustomEvent('gameReady', { detail: window.TangTangGuard }));
 
-// 네트워크 차단 또는 SDK 미호출 대비 안전한 자동 실행 폴백 (600ms)
-setTimeout(() => {
-  if (!game) {
-    startGame();
-  }
-}, 600);

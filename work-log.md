@@ -35,3 +35,7 @@
 
 
 2026-11-25 16:23:10 / 원스토어 SDK 미탑재 오류 원인 분석 및 전역 객체(ONEstoreH5) 노출 보강 / index.html, work-log.md / 원콘솔 검증기가 배포 URL(GitHub Pages)을 기준으로 검사함에 따른 깃 푸시 필요성을 안내하고 전역 객체(window.ONEstoreH5, window.createSDK) 노출을 보강함
+
+2026-11-25 16:28:00 / 원스토어 ONEplay SDK 연동 및 GitHub Pages 배포본 진단(코드 미수정) / prompt.txt, work-log.md / SDK 부팅 순서와 iframe·응답 헤더를 읽기 전용으로 점검해 검증 실패 원인을 특정함
+
+2026-11-25 16:30:20 / 원스토어 SDK 부팅 순서 수정 / index.html, src/main.js, prompt.txt, work-log.md / 시간 기반 자동 시작과 SDK 실패 시 시작을 제거하고 일반 브라우저 분기와 SDK 시작 성공 분기를 검증함
